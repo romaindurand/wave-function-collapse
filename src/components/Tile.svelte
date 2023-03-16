@@ -1,8 +1,7 @@
 <script lang="ts">
-	import type { TileType } from '../app';
-
-	export let types: TileType[] = [];
-	$: collapsed = types.length === 1;
+	import type { getExpandedTiles, TileType } from "../tiles";
+	export let possibleTypes: ReturnType<typeof getExpandedTiles> = [];
+	$: collapsed = possibleTypes.length === 1;
 	$: {
 		if (collapsed) {
 			console.log('collapsed');
@@ -11,8 +10,8 @@
 </script>
 
 <div class="tile" class:collapsed>
-	{#each types as type}
-		<img src={`images/${type}.png`} alt="tile" />
+	{#each possibleTypes as possibleType}
+		<img src={`images/${possibleType.type}.png`} alt="tile" class={`r${possibleType.rotation}`} />
 	{/each}
 </div>
 
@@ -26,8 +25,8 @@
 	.tile img {
 		box-sizing: content-box;
 		float: left;
-		width: 29px;
-		height: 29px;
+		width: 13px;
+		height: 13px;
 		border: 1px solid grey;
 	}
 	.tile.collapsed {
@@ -37,5 +36,17 @@
 		border: none;
 		width: 64px;
 		height: 64px;
+	}
+	.r0 {
+		transform: rotate(0deg);
+	}
+	.r1 {
+		transform: rotate(90deg);
+	}
+	.r2 {
+		transform: rotate(180deg);
+	}
+	.r3 {
+		transform: rotate(270deg);
 	}
 </style>
