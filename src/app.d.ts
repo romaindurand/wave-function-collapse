@@ -9,4 +9,11 @@ declare global {
 	}
 }
 
+export const tileTypes = ['sea', 'land', 'shore', 'shore-corner'];
+export type TileType = (typeof tileTypes)[number];
+export type TileData = {
+	type: TileType;
+	rotation: number;
+};
+
 export {};
