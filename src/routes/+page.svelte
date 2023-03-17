@@ -27,9 +27,13 @@
 		const randomType = randomCell.possibleTypes[Math.floor(Math.random() * randomCell.possibleTypes.length)];
 		randomCell.possibleTypes = [randomType];
 		flatGrid = [...flatGrid];
+		reduceAdjacentCellsEntropy(randomCell);
+	}
+
+	function reduceAdjacentCellsEntropy(currentCell: (typeof flatGrid)[number]) {
 		// get adjacent cells
-		const col = randomCell.index % gridSize;
-		const row = Math.floor(randomCell.index / gridSize);
+		const col = currentCell.index % gridSize;
+		const row = Math.floor(currentCell.index / gridSize);
 		const adjacentCells = [
 			grid[row - 1]?.[col],
 			grid[row]?.[col + 1],
@@ -37,7 +41,8 @@
 			grid[row]?.[col - 1],
 		]
 
-		const centerCell = addBorders(randomType)
+		const currentCellType = currentCell.possibleTypes[0];
+		const centerCell = addBorders(currentCellType)
 		centerCell.borders.forEach((border, i) => {
 			// out of grid
 			if (!adjacentCells[i]) return;
@@ -47,8 +52,10 @@
 			adjacentCells[i].possibleTypes = adjacentCells[i].possibleTypes.filter((possibleType) => {
 				const possibleTypeWithBorders = addBorders(possibleType);
 				const oppositeBorder = (i + 2) % 4;
-				return isMatchingBorder(possibleTypeWithBorders.borders[oppositeBorder], border)
+				return isMatchingBorder(possibleTypeWithBorders.borders[oppositeBorder], border);
 			});
+			//recursively reduce entropy of adjacent cells if this one is now collapsed
+			if (adjacentCells[i].possibleTypes.length === 1) reduceAdjacentCellsEntropy(adjacentCells[i]);
 		});
 	}
 </script>
@@ -60,7 +67,7 @@
 		{/each}
 	</div>
 {/each}
-	<button on:click={collapseRandomCell}> random entropy reduction </button>
+<button on:click={collapseRandomCell}>random entropy reduction </button>
 
 <style>
 	.row {
