@@ -18,6 +18,11 @@ const tiles: Tile[] = [
 		type: 'land-corner',
 		rotations: [0, 1, 2, 3],
 		borders: ['sand-water', 'water', 'water', 'water-sand']
+	},
+	{
+		type: 'sea-corner',
+		rotations: [0, 1, 2, 3],
+		borders: ['water-sand', 'sand', 'sand', 'sand-water']
 	}
 ];
 
@@ -68,7 +73,7 @@ export function isMatchingBorder(b1: Border, b2: Border) {
 
 export default tiles;
 
-export const tileTypes = ['sea', 'land', 'shore', 'land-corner'] as const;
+export const tileTypes = ['sea', 'land', 'shore', 'land-corner', 'sea-corner'] as const;
 export type TileType = (typeof tileTypes)[number];
 export const rotations = [0, 1, 2, 3] as const;
 type Rotation = (typeof rotations)[number];
