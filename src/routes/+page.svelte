@@ -1,6 +1,6 @@
 <script lang="ts">
-	import Tile from '../components/Tile.svelte';
-	import { addBorders, getExpandedTiles, isMatchingBorder, tileTypes } from '../tiles';
+	import TileEl from '../components/Tile.svelte';
+	import { getExpandedTiles, isMatchingBorder, tileTypes, type Tile } from '../tiles';
 
 	const gridSize = 10;
 	let flatGrid = Array.from({ length: gridSize * gridSize }).map((_, index) => {
@@ -14,6 +14,12 @@
 		return flatGrid.slice(i * gridSize, (i + 1) * gridSize);
 	});
 
+	function collapseGrid() {
+		while (flatGrid.some((cell) => cell.possibleTypes.length > 1)) {
+			collapseRandomCell();
+		}
+	}
+
 	function collapseRandomCell() {
 		// find cells with lowest entropy
 		const sortedFlatGrid = [...flatGrid]
@@ -24,10 +30,21 @@
 		// pick a random cell with lowest entropy
 		let randomCell = lowestEntropyCells[Math.floor(Math.random() * lowestEntropyCells.length)];
 		// pick a random type from the cell
-		const randomType = randomCell.possibleTypes[Math.floor(Math.random() * randomCell.possibleTypes.length)];
+		const randomType = pickRandomWheightedTile(randomCell.possibleTypes);
+		// const randomType = randomCell.possibleTypes[Math.floor(Math.random() * randomCell.possibleTypes.length)];
 		randomCell.possibleTypes = [randomType];
 		flatGrid = [...flatGrid];
 		reduceAdjacentCellsEntropy(randomCell);
+	}
+
+	function pickRandomWheightedTile(tiles: Tile[]): Tile {
+		const totalWeight = tiles.reduce((acc, tile) => acc + tile.weight, 0);
+		let random = Math.random() * totalWeight;
+		for (let i = 0; i < tiles.length; i++) {
+			random -= tiles[i].weight;
+			if (random < 0) return tiles[i];
+		}
+		return tiles[0];
 	}
 
 	function reduceAdjacentCellsEntropy(currentCell: (typeof flatGrid)[number]) {
@@ -41,18 +58,15 @@
 			grid[row]?.[col - 1],
 		]
 
-		const currentCellType = currentCell.possibleTypes[0];
-		const centerCell = addBorders(currentCellType)
-		centerCell.borders.forEach((border, i) => {
+		currentCell.possibleTypes[0].borders.forEach((border, i) => {
 			// out of grid
 			if (!adjacentCells[i]) return;
 			// already collapsed
 			if (adjacentCells[i].possibleTypes.length === 1) return;
 			//reduce entropy of adjacent cells
 			adjacentCells[i].possibleTypes = adjacentCells[i].possibleTypes.filter((possibleType) => {
-				const possibleTypeWithBorders = addBorders(possibleType);
 				const oppositeBorder = (i + 2) % 4;
-				return isMatchingBorder(possibleTypeWithBorders.borders[oppositeBorder], border);
+				return isMatchingBorder(possibleType.borders[oppositeBorder], border);
 			});
 			//recursively reduce entropy of adjacent cells if this one is now collapsed
 			if (adjacentCells[i].possibleTypes.length === 1) reduceAdjacentCellsEntropy(adjacentCells[i]);
@@ -63,11 +77,12 @@
 {#each grid as row, i}
 	<div class="row">
 		{#each row as { possibleTypes }, j}
-			<Tile {possibleTypes} />
+			<TileEl {possibleTypes} />
 		{/each}
 	</div>
 {/each}
 <button on:click={collapseRandomCell}>random entropy reduction </button>
+<button on:click={collapseGrid}>collapse grid</button>
 
 <style>
 	.row {

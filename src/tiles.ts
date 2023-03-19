@@ -1,53 +1,50 @@
-const tiles: Tile[] = [
+const tiles: TileDefinition[] = [
 	{
 		type: 'sea',
 		rotations: [0],
-		borders: ['water', 'water', 'water', 'water']
+		borders: ['water', 'water', 'water', 'water'],
+		weight: 100
 	},
 	{
 		type: 'land',
 		rotations: [0],
-		borders: ['sand', 'sand', 'sand', 'sand']
+		borders: ['sand', 'sand', 'sand', 'sand'],
+		weight: 5
 	},
 	{
 		type: 'shore',
 		rotations: [0, 1, 2, 3],
-		borders: ['sand', 'sand-water', 'water', 'water-sand']
+		borders: ['sand', 'sand-water', 'water', 'water-sand'],
+		weight: 5
 	},
 	{
 		type: 'land-corner',
 		rotations: [0, 1, 2, 3],
-		borders: ['sand-water', 'water', 'water', 'water-sand']
+		borders: ['sand-water', 'water', 'water', 'water-sand'],
+		weight: 10
 	},
 	{
 		type: 'sea-corner',
 		rotations: [0, 1, 2, 3],
-		borders: ['water-sand', 'sand', 'sand', 'sand-water']
+		borders: ['water-sand', 'sand', 'sand', 'sand-water'],
+		weight: 5
 	}
 ];
 
 export function getExpandedTiles(types: TileType[]) {
 	return tiles
 		.filter((tile) => types.includes(tile.type))
-		.reduce<{ type: string; rotation: number }[]>((acc, tile) => {
+		.reduce<Tile[]>((acc, tile) => {
 			tile.rotations.forEach((rotation) => {
 				acc.push({
 					type: tile.type,
-					rotation
+					borders: rotateBorders(tile.borders, rotation),
+					rotation,
+					weight: tile.weight
 				});
 			});
 			return acc;
 		}, []);
-}
-
-export function addBorders(tile: { type: string; rotation: number }) {
-	const { type, rotation } = tile;
-	const tileDefinition = tiles.find((tile) => tile.type === type);
-	if (!tileDefinition) {
-		throw new Error(`Tile type ${type} not found`);
-	}
-	const borders = rotateBorders(tileDefinition.borders, rotation);
-	return { ...tile, borders };
 }
 
 function rotateBorders(borders: Border[], rotation: number) {
@@ -80,8 +77,16 @@ type Rotation = (typeof rotations)[number];
 const borders = ['sand', 'water', 'sand-water', 'water-sand'] as const;
 type Border = (typeof borders)[number];
 
-export interface Tile {
+export interface TileDefinition {
 	type: TileType;
 	rotations: Rotation[];
 	borders: Border[];
+	weight: number;
+}
+
+export interface Tile {
+	type: string;
+	rotation: Rotation;
+	borders: Border[];
+	weight: number;
 }
