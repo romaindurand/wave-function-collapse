@@ -72,12 +72,21 @@
 			if (adjacentCells[i].possibleTypes.length === 1) reduceAdjacentCellsEntropy(adjacentCells[i]);
 		});
 	}
+
+	function manualCollapse(index: number, type: Tile) {
+		flatGrid[index].possibleTypes = [type];
+		flatGrid = [...flatGrid];
+		reduceAdjacentCellsEntropy(flatGrid[index]);
+	}
 </script>
 
 {#each grid as row, i}
 	<div class="row">
-		{#each row as { possibleTypes }, j}
-			<TileEl {possibleTypes} />
+		{#each row as { possibleTypes, index }, j}
+			<TileEl
+				{possibleTypes}
+				on:collapse={(event) => manualCollapse(index, event.detail)}
+			/>
 		{/each}
 	</div>
 {/each}

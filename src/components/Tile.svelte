@@ -1,6 +1,10 @@
 <script lang="ts">
-	import type { getExpandedTiles, TileType } from "../tiles";
+	import { createEventDispatcher } from "svelte";
+	import type { getExpandedTiles } from "../tiles";
 	export let possibleTypes: ReturnType<typeof getExpandedTiles> = [];
+
+	const dispatch = createEventDispatcher();
+
 	$: collapsed = possibleTypes.length === 1;
 	$: {
 		if (collapsed) {
@@ -11,11 +15,28 @@
 
 <div class="tile" class:collapsed>
 	{#each possibleTypes as possibleType}
-		<img src={`images/${possibleType.type}.png`} alt="tile" class={`r${possibleType.rotation}`} />
+	<button on:click="{() => dispatch('collapse', possibleType)}">
+		<img
+			src={`images/${possibleType.type}.png`}
+			alt="tile"
+			class={`r${possibleType.rotation}`}
+		/>
+	</button>
 	{/each}
 </div>
 
 <style>
+	button {
+		border: none;
+		background: none;
+		padding: 0;
+		margin: 0;
+		box-sizing: content-box;
+		border: 1px solid grey;
+		float: left;
+		width: 13px;
+		height: 13px;
+	}
 	.tile {
 		box-sizing: border-box;
 		width: 64px;
@@ -23,17 +44,16 @@
 		border: 1px solid black;
 	}
 	.tile img {
-		box-sizing: content-box;
-		float: left;
 		width: 13px;
 		height: 13px;
-		border: 1px solid grey;
 	}
 	.tile.collapsed {
 		border: none;
 	}
-	.tile.collapsed img {
+	.tile.collapsed button {
 		border: none;
+	}
+	.tile.collapsed img {
 		width: 64px;
 		height: 64px;
 	}
